@@ -1,0 +1,58 @@
+version: '3.1'
+services:
+  lune:
+    build: 
+      context: ./app
+      dockerfile: Dockerfile
+    image: alexxvazquezz/luneapp
+    #command: tail -F anything
+    volumes:
+     - ./full-labs-api:/var/www/html
+     - ./user-portal:/app
+    depends_on:
+     - mysql
+    restart: always
+    ports:
+     - "8080:8080"
+    networks:
+     - lune
+    links:
+     - mysql:db-container
+  node:
+    build:
+      context: ./user-portal
+      dockerfile: Dockerfile
+    image: alexxvazquezz/lunenode:8
+    ports:
+     - "8090:8000"
+    command: tail -F anything
+    networks:
+     - lune
+  mysql:
+    image: mysql:5.7
+    ports:
+     - "33067:3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "secret"
+      MYSQL_DATABASE: "homestead"
+      MYSQL_USER: "homestead"
+      MYSQL_PASSWORD: "secret"
+    volumes:
+      - ./data:/var/lib/mysql
+    networks:
+      - lune
+  redis:
+    image: redis:alpine
+    volumes:
+      - redisdata:/data
+    networks:
+      - lune
+networks:
+  lune:
+    driver: "bridge"
+volumes:
+  mysqldata:
+    driver: "local"
+  redisdata:
+    driver: "local"
